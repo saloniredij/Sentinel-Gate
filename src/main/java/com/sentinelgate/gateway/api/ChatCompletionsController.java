@@ -5,6 +5,7 @@ import com.sentinelgate.gateway.dto.ChatChoice;
 import com.sentinelgate.gateway.dto.ChatCompletionsRequest;
 import com.sentinelgate.gateway.dto.ChatCompletionsResponse;
 import com.sentinelgate.gateway.dto.ChatMessage;
+import com.sentinelgate.gateway.provider.ProviderClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,20 +17,15 @@ import java.util.UUID;
 @RestController
 public class ChatCompletionsController {
 
+    private final ProviderClient providerClient;
+    public ChatCompletionsController (ProviderClient providerClient){
+        this.providerClient = providerClient;
+    }
+
     @PostMapping("/v1/chat/completions")
     public Mono<ChatCompletionsResponse> createCompletion(@RequestBody ChatCompletionsRequest req) {
 
-        //temporarily mocking the response
-        var userLastMessage = (req.messages() != null && !req.messages().isEmpty()) ?
-                req.messages().get(req.messages().size() - 1).content() : "";
+        return providerClient.chatCompletions(req);
 
-        var assistantMessage = new ChatMessage(
-                "assistant", "Mock reply from gateway. You said : " +userLastMessage);
-
-        var response = new ChatCompletionsResponse("chatcmpl_" + UUID.randomUUID(),
-                req.model() == null ? "unknown" : req.model(),
-                List.of(new ChatChoice(0, assistantMessage)));
-
-        return Mono.just(response);
     }
 }
