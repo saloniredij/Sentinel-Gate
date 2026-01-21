@@ -1,22 +1,30 @@
 package com.sentinelgate.gateway.policy;
 
+import com.sentinelgate.gateway.config.PolicyProperties;
 import com.sentinelgate.gateway.dto.ChatCompletionsRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Component
 public class PolicyEngine {
 
-    private static final Set<String> ALLOWED_MODELS = Set.of(
-            "demo-model",
-            "gpt-4.1-mini",
-            "gemini-flash-3.0"
-    );
+    private final PolicyProperties policyProperties;
+
+    public PolicyEngine(PolicyProperties policyProperties){
+        this.policyProperties = policyProperties;
+    }
 
     //check the model and throw exception if the model isn't present in ALLOWED_MODELS
     public void enforce(ChatCompletionsRequest request) {
-        if (!ALLOWED_MODELS.contains(request.model())){
+        if (request.model() == null || request.model().isBlank()){
+            System.out.println(request.model());
+            throw new PolicyViolationException("Model is required.");
+        }
+
+        Set<String> allowed = new HashSet<>(policyProperties.getAllowedModels());
+        if (!allowed.contains(request.model())){
             throw new PolicyViolationException("Model not allowed: "+ request.model());
         }
     }
