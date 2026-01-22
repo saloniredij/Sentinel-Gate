@@ -23,8 +23,8 @@ public class PolicyEngine {
             throw new PolicyViolationException("Model is required.");
         }
 
-        Set<String> allowed = new HashSet<>(policyProperties.getAllowedModels());
-        if (!allowed.contains(request.model())){
+//        Set<String> allowed = new HashSet<>(policyProperties.getAllowedModels());
+        if (!policyProperties.getAllowedModels().contains(request.model())){
             throw new PolicyViolationException("Model not allowed: "+ request.model());
         }
     }
