@@ -1,12 +1,15 @@
 package com.sentinelgate.gateway.provider;
 
 
+import com.sentinelgate.gateway.api.ChatCompletionsController;
 import com.sentinelgate.gateway.dto.ChatCompletionsRequest;
 import com.sentinelgate.gateway.dto.ChatCompletionsResponse;
 import com.sentinelgate.gateway.error.PolicyViolationException;
 import com.sentinelgate.gateway.error.ProviderRateLimitedException;
 import com.sentinelgate.gateway.error.ProviderTimeoutException;
 import com.sentinelgate.gateway.error.ProviderUpstreamException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
@@ -20,6 +23,8 @@ import java.util.concurrent.TimeoutException;
 public class HttpProviderClient implements ProviderClient{
     private final WebClient providerWebClient;
 
+    private static final Logger log = LoggerFactory.getLogger(HttpProviderClient.class);
+
     public HttpProviderClient(WebClient providerWebClient) {
 
         this.providerWebClient = providerWebClient;
@@ -27,6 +32,7 @@ public class HttpProviderClient implements ProviderClient{
 
     @Override
     public Mono<ChatCompletionsResponse> chatCompletions(ChatCompletionsRequest request){
+        log.info("Calling provider /v1/chat/completions");
 
         return providerWebClient.post()
                 .uri("/v1/chat/completions")
