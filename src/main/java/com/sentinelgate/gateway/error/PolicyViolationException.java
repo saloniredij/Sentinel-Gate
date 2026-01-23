@@ -1,4 +1,4 @@
-package com.sentinelgate.gateway.policy;
+package com.sentinelgate.gateway.error;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;

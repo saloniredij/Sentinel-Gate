@@ -1,11 +1,10 @@
 package com.sentinelgate.gateway.policy;
 
-import com.sentinelgate.gateway.config.PolicyProperties;
-import com.sentinelgate.gateway.dto.ChatCompletionsRequest;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.Set;
+import com.sentinelgate.gateway.config.PolicyProperties;
+import com.sentinelgate.gateway.dto.ChatCompletionsRequest;
+import com.sentinelgate.gateway.error.PolicyViolationException;
 
 @Component
 public class PolicyEngine {
