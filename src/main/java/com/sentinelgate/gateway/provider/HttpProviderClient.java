@@ -4,9 +4,12 @@ package com.sentinelgate.gateway.provider;
 import com.sentinelgate.gateway.dto.ChatCompletionsRequest;
 import com.sentinelgate.gateway.dto.ChatCompletionsResponse;
 import com.sentinelgate.gateway.error.PolicyViolationException;
+import com.sentinelgate.gateway.error.ProviderRateLimitedException;
 import com.sentinelgate.gateway.error.ProviderTimeoutException;
+import com.sentinelgate.gateway.error.ProviderUpstreamException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
@@ -18,6 +21,7 @@ public class HttpProviderClient implements ProviderClient{
     private final WebClient providerWebClient;
 
     public HttpProviderClient(WebClient providerWebClient) {
+
         this.providerWebClient = providerWebClient;
     }
 
@@ -33,6 +37,9 @@ public class HttpProviderClient implements ProviderClient{
                 .onErrorMap(TimeoutException.class, t -> new ProviderTimeoutException("Provider Timeout"))
                 .retryWhen(Retry.backoff(2,Duration.ofMillis(500))
                         .filter(this::isRetryable)
+                        .doBeforeRetry(sig -> System.out.println("retrying provider call, #" + (sig.totalRetries() +1) +
+                                        " due to: " + sig.failure().getClass().getSimpleName())
+                        )
                         .onRetryExhaustedThrow((spec,signal) -> signal.failure())
                 );
 
@@ -42,8 +49,11 @@ public class HttpProviderClient implements ProviderClient{
     private boolean isRetryable(Throwable t){
 
         // never retry policy errors and own timeout exception
+        if (t instanceof ProviderRateLimitedException) return true;
+        if (t instanceof ProviderUpstreamException) return true;
+        if (t instanceof WebClientRequestException) return true;
         if(t instanceof ProviderTimeoutException || t instanceof PolicyViolationException) return false;
-        return true; //temporary -> remove later
+        return false; //temporary -> remove later
     }
 
 
